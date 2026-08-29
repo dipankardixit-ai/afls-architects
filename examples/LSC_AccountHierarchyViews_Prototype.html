@@ -1,0 +1,638 @@
+<!--
+  LSC Prototype self-check (SLDS 2 + Cosmos primer §10)
+  passed: 10 / 10
+  notes:  none
+  stories: LSC_HcoParentChildHierarchyView_UserStory.md (AC-1–AC-6)
+           LSC_HcoAffiliatedHcpConsentView_UserStory.md (AC-1–AC-6)
+  objects: Account (Parent Account), HealthcareFacility, HealthcarePractitionerFacility,
+           CommSubscriptionConsent — catalog Summer '26 / API v67.0; mark proposed in this PNM org
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KAM Account Hierarchy — LSC Prototype (Salesforce Life Sciences Cloud)</title>
+<style>
+  /* ---------- SLDS 2 + Cosmos: essential styling hooks (light-mode defaults) ---------- */
+  :root {
+    --slds-g-color-surface-1: #ffffff;
+    --slds-g-color-surface-2: #f3f3f3;
+    --slds-g-color-surface-3: #e5e5e5;
+    --slds-g-color-surface-container-1: #ffffff;
+    --slds-g-color-surface-container-2: #f3f3f3;
+    --slds-g-color-on-surface-1: #747474;
+    --slds-g-color-on-surface-2: #181818;
+    --slds-g-color-on-surface-3: #080707;
+    --slds-g-color-accent-1: #0176d3;
+    --slds-g-color-accent-2: #014486;
+    --slds-g-color-accent-container-1: #0176d3;
+    --slds-g-color-on-accent-1: #ffffff;
+    --slds-g-color-on-accent-2: #f3f3f3;
+    --slds-g-color-success-1: #2e844a;
+    --slds-g-color-on-success-1: #ffffff;
+    --slds-g-color-warning-1: #fe9339;
+    --slds-g-color-on-warning-1: #080707;
+    --slds-g-color-error-1: #ba0517;
+    --slds-g-color-on-error-1: #ffffff;
+    --slds-g-color-border-1: #c9c9c9;
+    --slds-g-color-border-2: #aeaeae;
+    --slds-g-spacing-1: 0.25rem;
+    --slds-g-spacing-2: 0.5rem;
+    --slds-g-spacing-3: 0.75rem;
+    --slds-g-spacing-4: 1rem;
+    --slds-g-spacing-5: 1.5rem;
+    --slds-g-spacing-6: 2rem;
+    --slds-g-spacing-8: 3rem;
+    --slds-g-spacing-12: 5rem;
+    --slds-g-font-family-base: "Salesforce Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --slds-g-font-size-base: 0.8125rem;
+    --slds-g-font-scale-neg-1: 0.75rem;
+    --slds-g-font-scale-1: 0.875rem;
+    --slds-g-font-scale-2: 1rem;
+    --slds-g-font-scale-3: 1.125rem;
+    --slds-g-font-scale-4: 1.25rem;
+    --slds-g-font-scale-6: 1.75rem;
+    --slds-g-font-scale-8: 2.5rem;
+    --slds-g-font-weight-4: 400;
+    --slds-g-font-weight-5: 500;
+    --slds-g-font-weight-7: 700;
+    --slds-g-radius-border-1: 0.125rem;
+    --slds-g-radius-border-2: 0.25rem;
+    --slds-g-radius-border-3: 0.5rem;
+    --slds-g-radius-border-circle: 50%;
+    --slds-g-shadow-1: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --slds-g-shadow-2: 0 2px 8px rgba(0, 0, 0, 0.16);
+    --slds-g-shadow-inset-1: inset 0 0 0 1px var(--slds-g-color-border-1);
+    --slds-g-duration-1: 150ms;
+    --slds-g-duration-2: 250ms;
+  }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--slds-g-font-family-base);
+    font-size: var(--slds-g-font-size-base);
+    color: var(--slds-g-color-on-surface-2, #181818);
+    background: var(--slds-g-color-surface-2, #f3f3f3);
+    line-height: 1.4;
+  }
+  .slds-grid { display: flex; flex-wrap: nowrap; }
+  .slds-wrap { flex-wrap: wrap; }
+  .slds-grid_vertical { display: flex; flex-direction: column; }
+  .slds-gutters > .slds-col { padding-left: var(--slds-g-spacing-3); padding-right: var(--slds-g-spacing-3); }
+  .slds-col { flex: 1 1 auto; min-width: 0; }
+  .slds-grid_align-center { justify-content: center; }
+  .slds-grid_align-end { justify-content: flex-end; }
+  .slds-grid_align-spread { justify-content: space-between; }
+  .slds-grid_vertical-align-center { align-items: center; }
+  .slds-size_1-of-1 { width: 100%; }
+  .slds-size_1-of-2 { width: 50%; }
+  .slds-size_1-of-3 { width: 33.333%; }
+  .slds-size_2-of-3 { width: 66.666%; }
+  .slds-m-around_x-small { margin: var(--slds-g-spacing-2); }
+  .slds-m-around_small { margin: var(--slds-g-spacing-3); }
+  .slds-m-around_medium { margin: var(--slds-g-spacing-4); }
+  .slds-m-bottom_x-small { margin-bottom: var(--slds-g-spacing-2); }
+  .slds-m-bottom_small { margin-bottom: var(--slds-g-spacing-3); }
+  .slds-m-bottom_medium { margin-bottom: var(--slds-g-spacing-4); }
+  .slds-m-bottom_large { margin-bottom: var(--slds-g-spacing-5); }
+  .slds-m-top_x-small { margin-top: var(--slds-g-spacing-2); }
+  .slds-m-top_medium { margin-top: var(--slds-g-spacing-4); }
+  .slds-m-right_x-small { margin-right: var(--slds-g-spacing-2); }
+  .slds-m-right_small { margin-right: var(--slds-g-spacing-3); }
+  .slds-m-left_small { margin-left: var(--slds-g-spacing-3); }
+  .slds-p-around_x-small { padding: var(--slds-g-spacing-2); }
+  .slds-p-around_small { padding: var(--slds-g-spacing-3); }
+  .slds-p-around_medium { padding: var(--slds-g-spacing-4); }
+  .slds-p-around_large { padding: var(--slds-g-spacing-5); }
+  .slds-p-vertical_small { padding-top: var(--slds-g-spacing-3); padding-bottom: var(--slds-g-spacing-3); }
+  .slds-p-horizontal_medium { padding-left: var(--slds-g-spacing-4); padding-right: var(--slds-g-spacing-4); }
+  .slds-text-heading_small { font-size: var(--slds-g-font-scale-2); font-weight: var(--slds-g-font-weight-5); color: var(--slds-g-color-on-surface-3); }
+  .slds-text-heading_medium { font-size: var(--slds-g-font-scale-4); font-weight: var(--slds-g-font-weight-5); color: var(--slds-g-color-on-surface-3); }
+  .slds-text-heading_large { font-size: var(--slds-g-font-scale-6); font-weight: var(--slds-g-font-weight-5); color: var(--slds-g-color-on-surface-3); }
+  .slds-text-body_regular { font-size: var(--slds-g-font-scale-1); color: var(--slds-g-color-on-surface-2); }
+  .slds-text-body_small { font-size: var(--slds-g-font-scale-neg-1); color: var(--slds-g-color-on-surface-1); }
+  .slds-text-title { font-size: var(--slds-g-font-scale-neg-1); text-transform: uppercase; letter-spacing: 0.04em; color: var(--slds-g-color-on-surface-1); font-weight: var(--slds-g-font-weight-7); }
+  .slds-text-color_weak { color: var(--slds-g-color-on-surface-1); }
+  .slds-text-align_center { text-align: center; }
+  .slds-hide { display: none !important; }
+  .slds-show { display: block !important; }
+  .slds-assistive-text { position: absolute !important; margin: -1px !important; border: 0 !important; padding: 0 !important; width: 1px !important; height: 1px !important; overflow: hidden !important; clip: rect(0 0 0 0) !important; }
+  .slds-truncate { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .slds-no-flex { flex: none; }
+  .slds-button {
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid transparent; border-radius: var(--slds-g-radius-border-2);
+    padding: 0 var(--slds-g-spacing-3); height: 2rem;
+    font-family: inherit; font-size: var(--slds-g-font-scale-1); font-weight: var(--slds-g-font-weight-5);
+    cursor: pointer; transition: background var(--slds-g-duration-1);
+  }
+  .slds-button_brand { background: var(--slds-g-color-accent-1); color: var(--slds-g-color-on-accent-1); }
+  .slds-button_brand:hover { background: var(--slds-g-color-accent-2); }
+  .slds-button_neutral { background: var(--slds-g-color-surface-1); color: var(--slds-g-color-accent-1);
+                         border-color: var(--slds-g-color-border-2); }
+  .slds-button_destructive { background: var(--slds-g-color-error-1); color: var(--slds-g-color-on-error-1); }
+  .slds-button_icon { height: 2rem; width: 2rem; padding: 0; }
+  .slds-button_icon-border-filled { background: var(--slds-g-color-surface-1); border-color: var(--slds-g-color-border-2); }
+  .slds-button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .slds-card { background: var(--slds-g-color-surface-container-1); border: 1px solid var(--slds-g-color-border-1);
+               border-radius: var(--slds-g-radius-border-2); box-shadow: var(--slds-g-shadow-1); position: relative; }
+  .slds-card__header { padding: var(--slds-g-spacing-4); align-items: center; }
+  .slds-card__body { padding: 0 var(--slds-g-spacing-4) var(--slds-g-spacing-4); }
+  .slds-card__body_inner { padding: var(--slds-g-spacing-4); }
+  .slds-card__header-title { font-weight: var(--slds-g-font-weight-5); }
+  .slds-card__footer { padding: var(--slds-g-spacing-3) var(--slds-g-spacing-4);
+                       border-top: 1px solid var(--slds-g-color-border-1); text-align: center; }
+  .slds-page-header { background: var(--slds-g-color-surface-1); padding: var(--slds-g-spacing-4);
+                      border-bottom: 1px solid var(--slds-g-color-border-1); }
+  .slds-page-header__row { display: flex; align-items: center; justify-content: space-between; gap: var(--slds-g-spacing-4); }
+  .slds-page-header__col-title { min-width: 0; flex: 1 1 auto; }
+  .slds-page-header__col-actions { flex: 0 0 auto; }
+  .slds-icon-container_circle { border-radius: var(--slds-g-radius-border-circle); display: inline-flex; }
+  .slds-tabs_default__nav { display: flex; border-bottom: 1px solid var(--slds-g-color-border-1); list-style: none; margin: 0; padding: 0; }
+  .slds-tabs_default__item { margin-right: var(--slds-g-spacing-4); }
+  .slds-tabs_default__link { display: block; padding: var(--slds-g-spacing-3) 0; color: var(--slds-g-color-on-surface-1);
+                             border-bottom: 2px solid transparent; text-decoration: none; cursor: pointer; }
+  .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
+    color: var(--slds-g-color-accent-1); border-bottom-color: var(--slds-g-color-accent-1); font-weight: var(--slds-g-font-weight-5);
+  }
+  .slds-tabs_default__content { padding: var(--slds-g-spacing-4) 0; }
+  .slds-table { width: 100%; border-collapse: collapse; background: var(--slds-g-color-surface-1); font-size: var(--slds-g-font-scale-1); }
+  .slds-table th, .slds-table td { text-align: left; padding: var(--slds-g-spacing-3); }
+  .slds-table thead th { background: var(--slds-g-color-surface-2); color: var(--slds-g-color-on-surface-1);
+                         font-weight: var(--slds-g-font-weight-7); text-transform: uppercase; letter-spacing: 0.04em;
+                         font-size: var(--slds-g-font-scale-neg-1); border-bottom: 1px solid var(--slds-g-color-border-1); }
+  .slds-table_bordered td, .slds-table_bordered th { border-bottom: 1px solid var(--slds-g-color-border-1); }
+  .slds-modal { position: fixed; inset: 4rem 0 0 0; z-index: 9002; display: flex; justify-content: center; }
+  .slds-modal__container { background: var(--slds-g-color-surface-1); border-radius: var(--slds-g-radius-border-3);
+                           box-shadow: var(--slds-g-shadow-2); width: min(720px, calc(100vw - 4rem)); max-height: calc(100vh - 8rem);
+                           display: flex; flex-direction: column; overflow: hidden; }
+  .slds-modal__header { padding: var(--slds-g-spacing-4); border-bottom: 1px solid var(--slds-g-color-border-1); }
+  .slds-modal__content { padding: var(--slds-g-spacing-4); overflow: auto; }
+  .slds-modal__footer { padding: var(--slds-g-spacing-4); border-top: 1px solid var(--slds-g-color-border-1);
+                         display: flex; justify-content: flex-end; gap: var(--slds-g-spacing-2); }
+  .slds-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 9001; }
+  .slds-notify_alert { padding: var(--slds-g-spacing-3) var(--slds-g-spacing-4);
+                       border-radius: var(--slds-g-radius-border-2); font-size: var(--slds-g-font-scale-1); }
+  .slds-theme_success { background: var(--slds-g-color-success-1); color: var(--slds-g-color-on-success-1); }
+  .slds-theme_error { background: var(--slds-g-color-error-1); color: var(--slds-g-color-on-error-1); }
+  .slds-theme_warning { background: var(--slds-g-color-warning-1); color: var(--slds-g-color-on-warning-1); }
+  .slds-illustration { color: var(--slds-g-color-on-surface-2); }
+  .lsc-badge {
+    display: inline-flex; align-items: center;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 2px 6px; margin-left: var(--slds-g-spacing-2);
+    border-radius: var(--slds-g-radius-border-1); border: 1px solid var(--slds-g-color-border-1);
+    color: var(--slds-g-color-on-surface-1); background: var(--slds-g-color-surface-2);
+    vertical-align: middle;
+  }
+  .lsc-badge.ootb { color: #2e844a; border-color: rgba(46,132,74,0.35); background: rgba(46,132,74,0.10); }
+  .lsc-badge.config { color: #0176d3; border-color: rgba(1,118,211,0.35); background: rgba(1,118,211,0.10); }
+  .lsc-badge.flow { color: #7f5cff; border-color: rgba(127,92,255,0.35); background: rgba(127,92,255,0.10); }
+  .lsc-badge.lwc { color: #b95500; border-color: rgba(185,85,0,0.35); background: rgba(185,85,0,0.10); }
+  .lsc-badge.os { color: #b8256b; border-color: rgba(184,37,107,0.35); background: rgba(184,37,107,0.10); }
+  .lsc-badge.apex { color: #ba0517; border-color: rgba(186,5,23,0.35); background: rgba(186,5,23,0.10); }
+  .lsc-badge.ext { color: #514f4d; border-color: var(--slds-g-color-border-2); background: var(--slds-g-color-surface-3); }
+  .lsc-build-banner {
+    background: var(--slds-g-color-accent-container-1); color: var(--slds-g-color-on-accent-1);
+    padding: var(--slds-g-spacing-3) var(--slds-g-spacing-5);
+    font-size: var(--slds-g-font-scale-1); line-height: 1.5;
+  }
+  .lsc-build-banner .lsc-build-title { font-weight: var(--slds-g-font-weight-7); letter-spacing: 0.02em; }
+  .lsc-build-banner .lsc-build-rejected { opacity: 0.85; }
+  .lsc-tree-row {
+    width: 100%; text-align: left; background: var(--slds-g-color-surface-1);
+    color: var(--slds-g-color-on-surface-2); border: 1px solid transparent;
+    border-radius: var(--slds-g-radius-border-1); cursor: pointer;
+    padding: var(--slds-g-spacing-2); margin-bottom: var(--slds-g-spacing-1);
+    font-family: inherit; font-size: var(--slds-g-font-scale-1);
+  }
+  .lsc-tree-row.lsc-is-selected {
+    background: var(--slds-g-color-surface-2);
+    border-color: var(--slds-g-color-accent-1);
+  }
+  .lsc-tree-nest { margin-left: var(--slds-g-spacing-4); }
+  .lsc-hcp-line { color: var(--slds-g-color-on-surface-1); font-size: var(--slds-g-font-scale-neg-1);
+                  padding: var(--slds-g-spacing-1) var(--slds-g-spacing-2); }
+  .lsc-legend { background: var(--slds-g-color-surface-1); border-top: 1px solid var(--slds-g-color-border-1);
+                padding: var(--slds-g-spacing-5) var(--slds-g-spacing-4); }
+  .lsc-chart { overflow-x: auto; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="icon-account" viewBox="0 0 24 24"><circle cx="12" cy="9" r="4" fill="currentColor"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7" fill="currentColor"/></symbol>
+  <symbol id="icon-hcp" viewBox="0 0 24 24"><path d="M12 2l3 6h6l-5 4 2 8-6-4-6 4 2-8-5-4h6z" fill="currentColor"/></symbol>
+  <symbol id="icon-visit" viewBox="0 0 24 24"><path d="M3 5h18v14H3z M7 9h10 M7 13h10 M7 17h6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="icon-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2z M12 10v5 M12 17h.01" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6" fill="currentColor"/></symbol>
+</svg>
+
+<header class="slds-global-header slds-grid slds-grid_align-spread slds-p-around_x-small"
+        style="background: var(--slds-g-color-on-surface-3); color: var(--slds-g-color-on-accent-1);">
+  <div class="slds-global-header__logo slds-text-title" style="color: var(--slds-g-color-on-accent-1);">Life Sciences Cloud</div>
+  <div class="slds-grid slds-grid_align-end slds-grid_vertical-align-center">
+    <span class="slds-m-right_small">Key Account Manager · Jordan Hale</span>
+    <button type="button" class="slds-button slds-button_icon" style="color: var(--slds-g-color-on-accent-1);" title="Running user">
+      <svg width="16" height="16" aria-hidden="true"><use href="#icon-user"></use></svg>
+      <span class="slds-assistive-text">Running user</span>
+    </button>
+    <span class="lsc-badge ootb">OOTB · App header</span>
+  </div>
+</header>
+
+<div class="lsc-build-banner">
+  <div class="lsc-build-title">Build technology · Mixed (OOTB Account record page + Dynamic Actions / Action Launcher + one LWC tree + Apex hierarchy/consent service)</div>
+  <div>Rationale: HCO parent–child is standard Account Parent Account, but Story 2 requires HCP consent on each affiliated node before engagement — that overlay is not OOTB Account Hierarchy.</div>
+  <div class="lsc-build-rejected">Rejected: OmniScript / FlexCard / Integration Procedure — this is a navigation view, not a guided intake. Rejected: OOTB Account Hierarchy alone — cannot show CommSubscriptionConsent on HCP leaves or gate Start Visit.</div>
+</div>
+
+<header class="slds-page-header">
+  <div class="slds-page-header__row">
+    <div class="slds-page-header__col-title">
+      <div class="slds-grid slds-grid_vertical-align-center">
+        <div class="slds-icon-container slds-icon-container_circle slds-p-around_x-small"
+             style="background: var(--slds-g-color-accent-container-1);">
+          <span class="slds-assistive-text">Healthcare organization</span>
+          <svg width="24" height="24" fill="var(--slds-g-color-on-accent-1)" aria-hidden="true">
+            <use href="#icon-account"></use>
+          </svg>
+        </div>
+        <div class="slds-m-left_small">
+          <p class="slds-text-title">Account · Healthcare organization<span class="lsc-badge ootb">OOTB · Account</span></p>
+          <h1 class="slds-text-heading_medium slds-truncate" id="page-title" title="Atlantic Medical Center">Atlantic Medical Center</h1>
+          <p class="slds-text-body_small" id="page-sub">Hospital · Morristown, NJ · Parent: Atlantic Health System</p>
+        </div>
+      </div>
+    </div>
+    <div class="slds-page-header__col-actions">
+      <div class="slds-grid slds-grid_align-end">
+        <button type="button" class="slds-button slds-button_neutral slds-m-right_x-small">
+          Edit
+          <span class="lsc-badge ootb">OOTB</span>
+        </button>
+        <button type="button" class="slds-button slds-button_brand" id="btn-view-hierarchy">
+          View Account Hierarchy
+          <span class="lsc-badge config">Config · AL</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="slds-p-horizontal_medium">
+  <div class="slds-tabs_default slds-m-top_medium">
+    <p class="slds-text-title slds-m-bottom_x-small">Walkthrough state (maps to ACs)</p>
+    <ul class="slds-tabs_default__nav" role="tablist" id="state-tabs">
+      <li class="slds-tabs_default__item slds-is-active" role="presentation"><a class="slds-tabs_default__link" href="#state-happy" data-state="happy" role="tab" aria-selected="true">Happy path · L5 cardiology</a></li>
+      <li class="slds-tabs_default__item" role="presentation"><a class="slds-tabs_default__link" href="#state-empty" data-state="empty" role="tab" aria-selected="false">No affiliated HCPs</a></li>
+      <li class="slds-tabs_default__item" role="presentation"><a class="slds-tabs_default__link" href="#state-blocked" data-state="blocked" role="tab" aria-selected="false">Consent blocked</a></li>
+      <li class="slds-tabs_default__item" role="presentation"><a class="slds-tabs_default__link" href="#state-share" data-state="share" role="tab" aria-selected="false">Sharing omitted</a></li>
+      <li class="slds-tabs_default__item" role="presentation"><a class="slds-tabs_default__link" href="#state-loop" data-state="loop" role="tab" aria-selected="false">Invalid parent loop</a></li>
+    </ul>
+  </div>
+
+  <div id="alert-slot" class="slds-m-top_medium"></div>
+
+  <div class="slds-grid slds-wrap slds-gutters slds-m-top_medium">
+    <div class="slds-col slds-size_2-of-3">
+      <article class="slds-card">
+        <span class="lsc-badge lwc" style="position: absolute; top: var(--slds-g-spacing-2); right: var(--slds-g-spacing-2);">LWC · lscAccountHierarchyTree (proposed)</span>
+        <div class="slds-card__header slds-grid">
+          <h2 class="slds-card__header-title slds-text-heading_small">HCO parent–child tree</h2>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+          <p class="slds-text-body_small slds-m-bottom_small">Account Parent Account walks five levels: IDN → region → hospital → institute → department. HCP Person Accounts never appear as organization parents. <span class="lsc-badge apex">Apex · LSC_AccountHierarchyService (proposed)</span></p>
+          <div id="tree"></div>
+        </div>
+      </article>
+      <article class="slds-card slds-m-top_medium">
+        <span class="lsc-badge lwc" style="position: absolute; top: var(--slds-g-spacing-2); right: var(--slds-g-spacing-2);">LWC · org chart overlay (proposed)</span>
+        <div class="slds-card__header slds-grid">
+          <h2 class="slds-card__header-title slds-text-heading_small">Org chart (same book)</h2>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+          <p class="slds-text-body_small slds-m-bottom_small">Click a box to select that HCO. Prototype data — not a live org.</p>
+          <div class="lsc-chart" id="chart"></div>
+        </div>
+      </article>
+    </div>
+    <div class="slds-col slds-size_1-of-3">
+      <article class="slds-card">
+        <span class="lsc-badge lwc" style="position: absolute; top: var(--slds-g-spacing-2); right: var(--slds-g-spacing-2);">LWC · lscHcoAffiliatedHcpPanel (proposed)</span>
+        <div class="slds-card__header slds-grid">
+          <h2 class="slds-card__header-title slds-text-heading_small" id="detail-title">Selected site</h2>
+        </div>
+        <div class="slds-card__body slds-card__body_inner" id="detail"></div>
+        <footer class="slds-card__footer">
+          HealthcarePractitionerFacility · CommSubscriptionConsent
+          <span class="lsc-badge ootb">OOTB objects</span>
+        </footer>
+      </article>
+      <div class="slds-card slds-m-top_medium">
+        <header class="slds-card__header slds-grid">
+          <h2 class="slds-text-heading_small">Consent coverage (subtree)</h2>
+          <span class="lsc-badge apex">Apex · consent rollup (proposed)</span>
+        </header>
+        <div class="slds-card__body" id="coverage"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lsc-legend slds-m-top_medium">
+  <h2 class="slds-text-heading_small slds-m-bottom_small">Build-technology legend</h2>
+  <p class="slds-text-body_small slds-m-bottom_medium">Mirrors Stories 1–2 Estimated Effort. OmniStudio runtime: not in scope. All custom names are (proposed) — this PNM org has no LSC metadata.</p>
+  <table class="slds-table slds-table_bordered">
+    <thead>
+      <tr>
+        <th scope="col">Component</th>
+        <th scope="col">Badge</th>
+        <th scope="col">Change</th>
+        <th scope="col">Effort</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Account Lightning record page (HCO)</td><td><span class="lsc-badge ootb">OOTB</span></td><td>Standard page; Parent Account</td><td>S</td></tr>
+      <tr><td>Dynamic Action / Action Launcher “View Account Hierarchy”</td><td><span class="lsc-badge config">Config · AL</span></td><td>New action on HCO layout</td><td>S</td></tr>
+      <tr><td>lscAccountHierarchyTree</td><td><span class="lsc-badge lwc">LWC</span></td><td>New (proposed) expand/collapse tree</td><td>XL</td></tr>
+      <tr><td>lscHcoAffiliatedHcpPanel</td><td><span class="lsc-badge lwc">LWC</span></td><td>New (proposed) HCP list + consent gate</td><td>XL</td></tr>
+      <tr><td>LSC_AccountHierarchyService</td><td><span class="lsc-badge apex">Apex</span></td><td>New (proposed) ancestor/descendant walk, cycle stop, Person Account exclusion, user-mode sharing</td><td>L</td></tr>
+      <tr><td>HealthcareFacility.ParentHealthcareFacility</td><td><span class="lsc-badge ootb">OOTB</span></td><td>Optional facility nesting — verify in target org</td><td>S</td></tr>
+      <tr><td>HealthcarePractitionerFacility</td><td><span class="lsc-badge ootb">OOTB</span></td><td>Active HCP–site affiliation</td><td>S</td></tr>
+      <tr><td>CommSubscriptionConsent</td><td><span class="lsc-badge ootb">OOTB</span></td><td>Granted / Declined / Not Captured</td><td>S</td></tr>
+      <tr><td>Start Visit / Send Approved Email</td><td><span class="lsc-badge config">Config · AL</span></td><td>Visible only when consent = Granted</td><td>M</td></tr>
+    </tbody>
+  </table>
+  <p class="slds-text-body_small slds-m-top_medium">Stories: <a href="LSC_HcoParentChildHierarchyView_UserStory.md">Story 1 — HCO tree</a> · <a href="LSC_HcoAffiliatedHcpConsentView_UserStory.md">Story 2 — HCP consent</a> · <a href="LSC_AccountHierarchyViews_Epic.md">Epic</a></p>
+</div>
+
+<div id="modal-root"></div>
+
+<script>
+(function () {
+  var HCOS = [
+    { id: "atlantic-hs", name: "Atlantic Health System", type: "IDN", city: "Morristown, NJ", parentId: null },
+    { id: "atlantic-north", name: "North Region", type: "Region", city: "Morristown, NJ", parentId: "atlantic-hs" },
+    { id: "atlantic-south", name: "South Region", type: "Region", city: "Summit, NJ", parentId: "atlantic-hs" },
+    { id: "atlantic-mc", name: "Atlantic Medical Center", type: "Hospital", city: "Morristown, NJ", parentId: "atlantic-north" },
+    { id: "atlantic-ch", name: "Atlantic Community Hospital", type: "Hospital", city: "Summit, NJ", parentId: "atlantic-south" },
+    { id: "amc-hvi", name: "Heart & Vascular Institute", type: "Institute", city: "Morristown, NJ", parentId: "atlantic-mc" },
+    { id: "amc-cancer", name: "Cancer Institute", type: "Institute", city: "Morristown, NJ", parentId: "atlantic-mc" },
+    { id: "ach-cmi", name: "Community Medicine Institute", type: "Institute", city: "Summit, NJ", parentId: "atlantic-ch" },
+    { id: "amc-cardio", name: "Interventional Cardiology", type: "Department", city: "Morristown, NJ", parentId: "amc-hvi" },
+    { id: "amc-hf", name: "Heart Failure", type: "Department", city: "Morristown, NJ", parentId: "amc-hvi" },
+    { id: "amc-onco", name: "Medical Oncology", type: "Department", city: "Morristown, NJ", parentId: "amc-cancer" },
+    { id: "ach-pc", name: "Primary Care", type: "Department", city: "Summit, NJ", parentId: "ach-cmi" },
+    { id: "ach-im", name: "Internal Medicine", type: "Department", city: "Summit, NJ", parentId: "ach-cmi" }
+  ];
+  var HCPS = [
+    { id: "hcp-chen", name: "Maya Chen, MD", specialty: "Interventional cardiology", hcoId: "amc-cardio", primarySite: true, consent: "Granted" },
+    { id: "hcp-okonkwo", name: "James Okonkwo, MD", specialty: "Interventional cardiology", hcoId: "amc-cardio", primarySite: false, consent: "Declined" },
+    { id: "hcp-shah", name: "Priya Shah, MD", specialty: "Heart failure", hcoId: "amc-hf", primarySite: true, consent: "Not Captured" },
+    { id: "hcp-rossi", name: "Elena Rossi, MD", specialty: "Medical oncology", hcoId: "amc-onco", primarySite: true, consent: "Granted" },
+    { id: "hcp-park", name: "David Park, MD", specialty: "Family medicine", hcoId: "ach-pc", primarySite: true, consent: "Granted" },
+    { id: "hcp-rahman", name: "Aisha Rahman, MD", specialty: "Internal medicine", hcoId: "ach-im", primarySite: true, consent: "Not Captured" }
+  ];
+  var byId = {};
+  HCOS.forEach(function (n) { byId[n.id] = n; });
+  var open = {};
+  HCOS.forEach(function (n) { open[n.id] = true; });
+  var selectedId = "amc-cardio";
+  var state = "happy";
+  var hidden = {};
+
+  function childrenOf(id) {
+    return HCOS.filter(function (n) { return n.parentId === id && !hidden[n.id]; });
+  }
+  function hcpsAt(id) { return HCPS.filter(function (h) { return h.hcoId === id; }); }
+  function descendantIds(id) {
+    var ids = [id];
+    childrenOf(id).forEach(function (c) { ids = ids.concat(descendantIds(c.id)); });
+    return ids;
+  }
+  function parentOf(n) { return n.parentId ? byId[n.parentId] : null; }
+
+  function hideBranch(id) {
+    hidden[id] = true;
+    HCOS.filter(function (n) { return n.parentId === id; }).forEach(function (c) { hideBranch(c.id); });
+  }
+  function depthOf(n) {
+    var d = 0, cur = n, guard = 0;
+    while (cur && cur.parentId && guard < 20) {
+      cur = byId[cur.parentId];
+      d += 1;
+      guard += 1;
+    }
+    return d;
+  }
+
+  function applyState(s) {
+    state = s;
+    hidden = {};
+    if (s === "happy" || s === "blocked") selectedId = "amc-cardio";
+    if (s === "empty") selectedId = "atlantic-hs";
+    if (s === "share") {
+      selectedId = "atlantic-hs";
+      hideBranch("atlantic-south");
+    }
+    if (s === "loop") selectedId = "atlantic-mc";
+    render();
+  }
+
+  function alertHtml() {
+    if (state === "loop") {
+      return '<div class="slds-notify slds-notify_alert slds-theme_error" role="alert"><span class="slds-assistive-text">Error</span><h2>Hierarchy data is invalid — two organizations name each other as parent. The walk stopped at the first repeated organization. Ask master data to correct it.</h2> <span class="lsc-badge apex">Apex · cycle guard</span></div>';
+    }
+    if (state === "share") {
+      return '<div class="slds-notify slds-notify_alert slds-theme_warning" role="alert"><span class="slds-assistive-text">Warning</span><h2>South Region and its hospitals are omitted — this Key Account Manager does not have access. No “access denied” placeholder is shown.</h2> <span class="lsc-badge apex">Apex · user-mode sharing</span></div>';
+    }
+    if (state === "empty") {
+      return '<div class="slds-notify slds-notify_alert slds-theme_warning" role="alert"><span class="slds-assistive-text">Info</span><h2>IDN node selected (level 1 of 5). Affiliated HCPs live on department records (level 5), not on the IDN parent.</h2></div>';
+    }
+    return "";
+  }
+
+  function renderTree(id) {
+    var node = byId[id];
+    if (!node || hidden[id]) return "";
+    var kids = childrenOf(id);
+    var people = hcpsAt(id);
+    var isOpen = !!open[id];
+    var hasKids = kids.length > 0;
+    var chev = hasKids ? (isOpen ? "−" : "+") : "·";
+    var html = '<div><button type="button" class="lsc-tree-row' + (selectedId === id ? " lsc-is-selected" : "") + '" data-select="' + id + '" data-toggle="' + id + '"><span class="slds-text-title slds-m-right_x-small">' + chev + "</span><strong>" + node.name + "</strong> <span class=\"slds-text-color_weak\">" + node.type + "</span></button>";
+    if (isOpen && hasKids) {
+      html += '<div class="lsc-tree-nest">';
+      kids.forEach(function (c) { html += renderTree(c.id); });
+      html += "</div>";
+    }
+    if (isOpen && people.length) {
+      html += '<div class="lsc-tree-nest">';
+      people.forEach(function (h) {
+        html += '<div class="lsc-hcp-line">' + h.name + " · " + h.consent + ' <span class="lsc-badge ootb">OOTB · CommSubscriptionConsent</span></div>';
+      });
+      html += "</div>";
+    }
+    return html + "</div>";
+  }
+
+  function renderDetail() {
+    var n = byId[selectedId];
+    var people = hcpsAt(n.id);
+    var kids = childrenOf(n.id);
+    var parent = parentOf(n);
+    document.getElementById("page-title").textContent = n.name;
+    document.getElementById("page-sub").textContent = n.type + " · " + n.city + (parent ? " · Parent: " + parent.name : " · Ultimate parent");
+    document.getElementById("detail-title").textContent = n.name;
+    var body = '<p class="slds-text-body_small slds-m-bottom_small">' + n.city + ' · ' + kids.length + " child org" + (kids.length === 1 ? "" : "s") + "</p>";
+    if (!people.length) {
+      body += '<div class="slds-illustration slds-illustration_small slds-p-around_large slds-text-align_center"><h3 class="slds-text-heading_small">No affiliated providers are on file for this site</h3><p class="slds-text-body_regular slds-m-top_x-small">The organization tree stays visible. HCPs appear on department nodes (level 5) via HealthcarePractitionerFacility (active only).</p></div>';
+    } else {
+      body += '<table class="slds-table slds-table_bordered"><thead><tr><th>HCP</th><th>Specialty</th><th>Primary</th><th>Consent</th><th>Engagement</th></tr></thead><tbody>';
+      people.forEach(function (h) {
+        var allowed = h.consent === "Granted";
+        body += "<tr><th scope=\"row\">" + h.name + "</th><td>" + h.specialty + "</td><td>" + (h.primarySite ? "Yes" : "No") + "</td><td>" + h.consent + "</td><td>";
+        if (allowed) {
+          body += '<button type="button" class="slds-button slds-button_brand" data-engage="' + h.id + '">Start Visit <span class="lsc-badge config">Config · AL</span></button>';
+        } else {
+          body += '<button type="button" class="slds-button slds-button_neutral" data-block="' + h.id + '">Blocked <span class="lsc-badge config">Config · AL gate</span></button>';
+        }
+        body += "</td></tr>";
+      });
+      body += "</tbody></table>";
+      if (people.some(function (h) { return h.consent !== "Granted"; })) {
+        body += '<div class="slds-notify slds-notify_alert slds-theme_warning slds-m-top_medium" role="alert"><span class="slds-assistive-text">Warning</span><h2>Visit and approved-message actions do not start when consent is Declined or Not Captured.</h2></div>';
+      }
+    }
+    document.getElementById("detail").innerHTML = body;
+  }
+
+  function renderCoverage() {
+    var ids = descendantIds(selectedId);
+    var people = HCPS.filter(function (h) { return ids.indexOf(h.hcoId) !== -1 && !hidden[h.hcoId]; });
+    var g = people.filter(function (h) { return h.consent === "Granted"; }).length;
+    var d = people.filter(function (h) { return h.consent === "Declined"; }).length;
+    var m = people.filter(function (h) { return h.consent === "Not Captured"; }).length;
+    document.getElementById("coverage").innerHTML = '<table class="slds-table slds-table_bordered"><thead><tr><th>Status</th><th>HCP count</th><th>Engagement</th></tr></thead><tbody><tr><td>Granted</td><td>' + g + "</td><td>Yes</td></tr><tr><td>Declined</td><td>" + d + "</td><td>No</td></tr><tr><td>Not Captured</td><td>" + m + "</td><td>No</td></tr></tbody></table>";
+  }
+
+  function renderChart() {
+    var visible = HCOS.filter(function (n) { return !hidden[n.id]; });
+    var W = 200, H = 52, rankGap = 48, nodeGap = 16, pad = 16;
+    var maxDepth = 0;
+    visible.forEach(function (n) {
+      var d = depthOf(n);
+      if (d > maxDepth) maxDepth = d;
+    });
+    var rankCount = maxDepth + 1;
+    var ranks = [];
+    var r;
+    for (r = 0; r < rankCount; r += 1) ranks.push([]);
+    visible.forEach(function (n) { ranks[depthOf(n)].push(n); });
+    var maxN = 1;
+    ranks.forEach(function (row) { if (row.length > maxN) maxN = row.length; });
+    var width = pad * 2 + maxN * (W + nodeGap) - nodeGap;
+    var height = pad * 2 + rankCount * H + Math.max(rankCount - 1, 0) * rankGap;
+    var pos = {};
+    ranks.forEach(function (row, ri) {
+      var rowW = row.length * W + Math.max(row.length - 1, 0) * nodeGap;
+      var x0 = (width - rowW) / 2;
+      row.forEach(function (n, i) {
+        pos[n.id] = { x: x0 + i * (W + nodeGap), y: pad + ri * (H + rankGap) };
+      });
+    });
+    var accent = "var(--slds-g-color-accent-1)";
+    var border = "var(--slds-g-color-border-1)";
+    var fillSel = "var(--slds-g-color-surface-2)";
+    var fill = "var(--slds-g-color-surface-1)";
+    var text = "var(--slds-g-color-on-surface-2)";
+    var weak = "var(--slds-g-color-on-surface-1)";
+    var lines = visible.filter(function (n) { return n.parentId && pos[n.parentId] && pos[n.id]; }).map(function (n) {
+      var a = pos[n.parentId], b = pos[n.id];
+      return '<line x1="' + (a.x + W / 2) + '" y1="' + (a.y + H) + '" x2="' + (b.x + W / 2) + '" y2="' + b.y + '" stroke="' + border + '" stroke-width="1" />';
+    }).join("");
+    var boxes = visible.map(function (n) {
+      var p = pos[n.id];
+      var sel = n.id === selectedId;
+      return '<g data-select="' + n.id + '" style="cursor:pointer"><rect x="' + p.x + '" y="' + p.y + '" width="' + W + '" height="' + H + '" rx="4" fill="' + (sel ? fillSel : fill) + '" stroke="' + (sel ? accent : border) + '" stroke-width="' + (sel ? 2 : 1) + '" /><text x="' + (p.x + 10) + '" y="' + (p.y + 22) + '" fill="' + text + '" font-size="11" font-weight="600">' + n.name + '</text><text x="' + (p.x + 10) + '" y="' + (p.y + 40) + '" fill="' + weak + '" font-size="10">' + n.type + "</text></g>";
+    }).join("");
+    document.getElementById("chart").innerHTML = '<svg width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + " " + height + '" role="img" aria-label="Atlantic Health System organization tree">' + lines + boxes + "</svg>";
+  }
+
+  function closeModal() {
+    document.getElementById("modal-root").innerHTML = "";
+  }
+
+  function openBlocked(h) {
+    document.getElementById("modal-root").innerHTML =
+      '<div class="slds-backdrop slds-backdrop_open" data-close="1"></div>' +
+      '<section role="dialog" aria-modal="true" class="slds-modal slds-fade-in-open">' +
+      '<div class="slds-modal__container">' +
+      '<header class="slds-modal__header"><h2 class="slds-text-heading_medium">Cannot engage — consent not granted</h2><span class="lsc-badge config">Config · AL gate</span></header>' +
+      '<div class="slds-modal__content slds-p-around_medium"><p class="slds-text-body_regular">' + h.name + " has consent status <strong>" + h.consent + "</strong> on the default US engagement channel. The visit and approved-message actions do not start until consent is Granted.</p></div>" +
+      '<footer class="slds-modal__footer"><button type="button" class="slds-button slds-button_brand" data-close="1">Close</button></footer>' +
+      "</div></section>";
+  }
+
+  function openGranted(h) {
+    document.getElementById("alert-slot").innerHTML =
+      '<div class="slds-notify slds-notify_alert slds-theme_success" role="alert"><span class="slds-assistive-text">Success</span><h2>Start Visit is available for ' + h.name + " (consent Granted). Visit capture is out of scope for this prototype.</h2> <span class=\"lsc-badge config\">Config · AL</span></div>";
+  }
+
+  function render() {
+    document.getElementById("alert-slot").innerHTML = alertHtml();
+    document.getElementById("tree").innerHTML = renderTree("atlantic-hs");
+    renderDetail();
+    renderCoverage();
+    renderChart();
+  }
+
+  document.getElementById("state-tabs").addEventListener("click", function (e) {
+    var a = e.target.closest("[data-state]");
+    if (!a) return;
+    e.preventDefault();
+    Array.prototype.forEach.call(document.querySelectorAll("#state-tabs .slds-tabs_default__item"), function (li) {
+      li.classList.remove("slds-is-active");
+      li.querySelector("a").setAttribute("aria-selected", "false");
+    });
+    a.parentNode.classList.add("slds-is-active");
+    a.setAttribute("aria-selected", "true");
+    applyState(a.getAttribute("data-state"));
+  });
+
+  document.body.addEventListener("click", function (e) {
+    if (e.target.closest("[data-close]")) { closeModal(); return; }
+    var block = e.target.closest("[data-block]");
+    if (block) {
+      var hb = HCPS.filter(function (h) { return h.id === block.getAttribute("data-block"); })[0];
+      openBlocked(hb);
+      return;
+    }
+    var eng = e.target.closest("[data-engage]");
+    if (eng) {
+      var hg = HCPS.filter(function (h) { return h.id === eng.getAttribute("data-engage"); })[0];
+      openGranted(hg);
+      return;
+    }
+    var sel = e.target.closest("[data-select]");
+    if (sel) {
+      var id = sel.getAttribute("data-select");
+      if (sel.hasAttribute("data-toggle") && selectedId === id) {
+        open[id] = !open[id];
+      } else {
+        selectedId = id;
+        open[id] = true;
+      }
+      render();
+    }
+  });
+
+  document.getElementById("btn-view-hierarchy").addEventListener("click", function () {
+    document.getElementById("tree").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  applyState("happy");
+})();
+</script>
+</body>
+</html>
