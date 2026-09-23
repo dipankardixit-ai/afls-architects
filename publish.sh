@@ -8,12 +8,12 @@ export GIT_DIR="$ROOT/git-store"
 export GIT_WORK_TREE="$ROOT"
 
 OWNER="$(gh api user --jq .login)"
-REPO="afls-architects"
+REPO="lsc-architects"
 REMOTE="https://github.com/${OWNER}/${REPO}.git"
 
 if ! gh repo view "${OWNER}/${REPO}" >/dev/null 2>&1; then
   gh repo create "${REPO}" --public \
-    --description "AFLS Architects Team — LSC Delivery Architect agent skill. Prototype-first Solution Plans, Salesforce-grounded HTML prototypes, and implementation-ready user stories for Life Sciences Cloud."
+    --description "LSC Architects Team — LSC Delivery Architect agent skill. Prototype-first Solution Plans, Salesforce-grounded HTML prototypes, and implementation-ready user stories for Life Sciences Cloud."
 fi
 
 if git remote get-url origin >/dev/null 2>&1; then

@@ -1,0 +1,308 @@
+<!--
+  LSC Prototype self-check (SLDS 2 + Cosmos primer §10)
+  passed: 10 / 10
+  notes:  LSC Architects org-setup guide (not a record-page mockup)
+  stories: LSC_EventAttendanceCheckIn_UserStory.md
+  objects: MngEvent, MngEventType, MngEventParticipant, EventMgmtParticipantType,
+           EventMgmtParticipantRole, EstimatedExpense — catalog API v67.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LSC Event Management setup guide — LSC (Salesforce Life Sciences Cloud)</title>
+<style>
+  :root {
+    --slds-g-color-surface-1: #ffffff;
+    --slds-g-color-surface-2: #f3f3f3;
+    --slds-g-color-surface-3: #e5e5e5;
+    --slds-g-color-surface-container-1: #ffffff;
+    --slds-g-color-surface-container-2: #f3f3f3;
+    --slds-g-color-on-surface-1: #747474;
+    --slds-g-color-on-surface-2: #181818;
+    --slds-g-color-on-surface-3: #080707;
+    --slds-g-color-accent-1: #0176d3;
+    --slds-g-color-accent-2: #014486;
+    --slds-g-color-accent-container-1: #0176d3;
+    --slds-g-color-on-accent-1: #ffffff;
+    --slds-g-color-on-accent-2: #f3f3f3;
+    --slds-g-color-success-1: #2e844a;
+    --slds-g-color-on-success-1: #ffffff;
+    --slds-g-color-error-1: #ba0517;
+    --slds-g-color-on-error-1: #ffffff;
+    --slds-g-color-border-1: #c9c9c9;
+    --slds-g-color-border-2: #aeaeae;
+    --slds-g-spacing-1: 0.25rem;
+    --slds-g-spacing-2: 0.5rem;
+    --slds-g-spacing-3: 0.75rem;
+    --slds-g-spacing-4: 1rem;
+    --slds-g-spacing-5: 1.5rem;
+    --slds-g-spacing-6: 2rem;
+    --slds-g-font-family-base: "Salesforce Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --slds-g-font-size-base: 0.8125rem;
+    --slds-g-font-scale-neg-1: 0.75rem;
+    --slds-g-font-scale-1: 0.875rem;
+    --slds-g-font-scale-2: 1rem;
+    --slds-g-font-scale-4: 1.25rem;
+    --slds-g-font-scale-6: 1.75rem;
+    --slds-g-font-weight-5: 500;
+    --slds-g-font-weight-7: 700;
+    --slds-g-radius-border-1: 0.125rem;
+    --slds-g-radius-border-2: 0.25rem;
+  }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--slds-g-font-family-base);
+    font-size: var(--slds-g-font-size-base);
+    color: var(--slds-g-color-on-surface-2, #181818);
+    background: var(--slds-g-color-surface-2, #f3f3f3);
+    line-height: 1.45;
+  }
+  .lsc-header {
+    background: var(--slds-g-color-on-surface-3, #080707);
+    color: var(--slds-g-color-on-accent-1, #ffffff);
+    padding: var(--slds-g-spacing-3) var(--slds-g-spacing-5);
+    display: flex; justify-content: space-between; align-items: center; gap: var(--slds-g-spacing-3);
+    font-weight: var(--slds-g-font-weight-5);
+  }
+  .lsc-header span:first-child { letter-spacing: 0.04em; }
+  .lsc-build-banner {
+    background: var(--slds-g-color-accent-1, #0176d3);
+    color: var(--slds-g-color-on-accent-1, #ffffff);
+    padding: var(--slds-g-spacing-2) var(--slds-g-spacing-5);
+    font-size: var(--slds-g-font-scale-neg-1);
+    font-weight: var(--slds-g-font-weight-5);
+  }
+  main { max-width: 52rem; margin: var(--slds-g-spacing-5) auto; padding: 0 var(--slds-g-spacing-4) var(--slds-g-spacing-8); }
+  .card {
+    background: var(--slds-g-color-surface-1, #ffffff);
+    border: 1px solid var(--slds-g-color-border-1, #c9c9c9);
+    border-radius: var(--slds-g-radius-border-2);
+    padding: var(--slds-g-spacing-5);
+    margin-bottom: var(--slds-g-spacing-4);
+  }
+  h1 { font-size: var(--slds-g-font-scale-6); color: var(--slds-g-color-on-surface-3, #080707); margin: 0 0 var(--slds-g-spacing-2); }
+  h2 { font-size: var(--slds-g-font-scale-4); color: var(--slds-g-color-accent-2, #014486); margin: var(--slds-g-spacing-6) 0 var(--slds-g-spacing-3); }
+  .card > h2:first-child { margin-top: 0; }
+  h3 { font-size: var(--slds-g-font-scale-2); margin: var(--slds-g-spacing-4) 0 var(--slds-g-spacing-2); }
+  p, li { margin: var(--slds-g-spacing-2) 0; }
+  .muted { color: var(--slds-g-color-on-surface-1, #747474); }
+  a { color: var(--slds-g-color-accent-1, #0176d3); }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: var(--slds-g-font-scale-neg-1);
+    background: var(--slds-g-color-surface-2, #f3f3f3);
+    padding: 0 var(--slds-g-spacing-1);
+    border-radius: var(--slds-g-radius-border-1);
+  }
+  ol.setup { padding-left: var(--slds-g-spacing-5); }
+  ol.setup > li { margin: var(--slds-g-spacing-3) 0; }
+  table { width: 100%; border-collapse: collapse; margin: var(--slds-g-spacing-3) 0; }
+  th, td {
+    border: 1px solid var(--slds-g-color-border-1, #c9c9c9);
+    padding: var(--slds-g-spacing-2) var(--slds-g-spacing-3);
+    text-align: left; vertical-align: top;
+  }
+  th {
+    background: var(--slds-g-color-surface-2, #f3f3f3);
+    font-size: var(--slds-g-font-scale-neg-1);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--slds-g-color-on-surface-1, #747474);
+  }
+  .cta {
+    display: inline-block;
+    background: var(--slds-g-color-accent-1, #0176d3);
+    color: var(--slds-g-color-on-accent-1, #ffffff) !important;
+    text-decoration: none;
+    padding: var(--slds-g-spacing-2) var(--slds-g-spacing-4);
+    border-radius: var(--slds-g-radius-border-2);
+    font-weight: var(--slds-g-font-weight-7);
+    margin: var(--slds-g-spacing-1) var(--slds-g-spacing-2) var(--slds-g-spacing-1) 0;
+  }
+  .cta.secondary {
+    background: var(--slds-g-color-surface-1, #ffffff);
+    color: var(--slds-g-color-accent-1, #0176d3) !important;
+    border: 1px solid var(--slds-g-color-border-1, #c9c9c9);
+  }
+  .lsc-badge {
+    display: inline-block;
+    font-size: var(--slds-g-font-scale-neg-1);
+    font-weight: var(--slds-g-font-weight-7);
+    letter-spacing: 0.04em;
+    padding: 0 var(--slds-g-spacing-1);
+    border: 1px solid var(--slds-g-color-border-1, #c9c9c9);
+    border-radius: var(--slds-g-radius-border-1);
+    margin-left: var(--slds-g-spacing-1);
+  }
+  .lsc-badge.ootb { color: var(--slds-g-color-success-1, #2e844a); }
+  .lsc-badge.config { color: var(--slds-g-color-accent-1, #0176d3); }
+  .lsc-badge.lwc { color: var(--slds-g-color-error-1, #ba0517); }
+  .check { list-style: none; padding: 0; }
+  .check li { padding-left: var(--slds-g-spacing-5); position: relative; }
+  .check li::before { content: ""; position: absolute; left: 0; top: 0.3em; width: 0.85em; height: 0.85em; border: 1px solid var(--slds-g-color-border-2, #aeaeae); border-radius: var(--slds-g-radius-border-1); }
+  .warn {
+    border-left: 4px solid var(--slds-g-color-error-1, #ba0517);
+    padding: var(--slds-g-spacing-3) var(--slds-g-spacing-4);
+    background: var(--slds-g-color-surface-container-2, #f3f3f3);
+    margin: var(--slds-g-spacing-3) 0;
+  }
+  nav.toc a { display: inline-block; margin: 0 var(--slds-g-spacing-3) var(--slds-g-spacing-2) 0; font-size: var(--slds-g-font-scale-neg-1); }
+</style>
+</head>
+<body>
+<header class="lsc-header">
+  <span>LSC · Agentforce Life Sciences</span>
+  <span>Event Organizer · Priya Nair</span>
+</header>
+<div class="lsc-build-banner">
+  Setup guide · OOTB Lightning list + record + Path · Config Action Launcher · LWC roster proposed · no OmniScript
+</div>
+<main>
+  <div class="card">
+    <h1>Event Management setup guide</h1>
+    <p class="muted">For LSC Architects standing up Managed Events in a Life Sciences Cloud for Customer Engagement org (API 67.0+). This is org setup. The day-of talk track is the demo runbook.</p>
+    <p>
+      <a class="cta" href="https://www.figma.com/proto/jeqVt9qNOlnbXxzlsZAUad/LSC-Event-Management-Clickable-Prototype?node-id=4-129&amp;starting-point-node-id=4-129&amp;scaling=contain&amp;content-scaling=fixed" target="_blank" rel="noopener">Figma prototype <span class="lsc-badge lwc">LWC stand-in</span></a>
+      <a class="cta secondary" href="LSC_EventManagement_DemoRunbook.html">Demo runbook</a>
+      <a class="cta secondary" href="https://developer.salesforce.com/docs/atlas.en-us.life_sciences_dev_guide.meta/life_sciences_dev_guide/life_sciences_event_management.htm" target="_blank" rel="noopener">Developer Guide</a>
+    </p>
+    <nav class="toc" aria-label="Steps">
+      <a href="#s0">0 Org</a>
+      <a href="#s1">1 Perms</a>
+      <a href="#s2">2 Event type</a>
+      <a href="#s3">3 Roles</a>
+      <a href="#s4">4 Accounts</a>
+      <a href="#s5">5 Events</a>
+      <a href="#s6">6 Lightning</a>
+      <a href="#s7">7 Attendance</a>
+      <a href="#s8">8 Verify</a>
+    </nav>
+  </div>
+
+  <div class="card" id="s0">
+    <h2>0. Confirm the org <span class="lsc-badge ootb">OOTB</span></h2>
+    <p class="warn"><strong>Do not run this in the PNM / IBXQA workspace org.</strong> <code>MngEvent</code> is LSC Customer Engagement, API 67.0+.</p>
+    <ol class="setup">
+      <li>Setup → <strong>Company Information</strong> — Life Sciences Cloud and Life Sciences Cloud for Customer Engagement.</li>
+      <li>Developer Console: <code>SELECT Id FROM MngEvent LIMIT 1</code>. If <code>INVALID_TYPE</code>, stop and use Figma only.</li>
+      <li>App Launcher — <strong>Managed Events</strong> (or the LSC app that includes Events).</li>
+      <li>Object Manager — Managed Event, Managed Event Type, Managed Event Participant.</li>
+    </ol>
+  </div>
+
+  <div class="card" id="s1">
+    <h2>1. Permissions <span class="lsc-badge config">Config</span></h2>
+    <p>Assign <strong>Life Sciences Commercial Admin</strong> to the architect who configures. That set is documented for the Life Sciences Admin Console (Visit Management Help). Confirm an Event tile exists in <em>this</em> package version.</p>
+    <p>For the Event Organizer, <strong>do not invent a permission set name</strong>. Search Setup → Permission Sets for Life Sciences and Event. Pick the set with CRUD on Managed Event and Managed Event Participant. Assign it to Priya Nair (Time Zone America/New_York).</p>
+  </div>
+
+  <div class="card" id="s2">
+    <h2>2. Event type <span class="lsc-badge ootb">OOTB</span></h2>
+    <p><code>MngEvent.MngEventTypeId</code> is required. <code>TargetTemplate</code> is a restricted picklist.</p>
+    <table>
+      <thead><tr><th>Name</th><th>TargetTemplate</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td>Speaker Meeting — Oncology Advisory Board</td><td><code>SpeakerMeeting</code></td><td>Demo event</td></tr>
+        <tr><td>Representative-led meeting</td><td><code>Presentation</code></td><td>Optional</td></tr>
+        <tr><td>HCP sponsorship</td><td><code>Sponsored</code></td><td>Optional</td></tr>
+        <tr><td>Display / exhibit</td><td><code>DisplaysAndExhibits</code></td><td>Optional</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" id="s3">
+    <h2>3. Participant type and role <span class="lsc-badge ootb">OOTB</span></h2>
+    <p><code>ParticipantType</code> is only <strong>Attendee</strong> or <strong>Expert</strong>. <code>ParticipantRoleId</code> is required.</p>
+    <table>
+      <thead><tr><th>Object</th><th>Record</th></tr></thead>
+      <tbody>
+        <tr><td><code>EventMgmtParticipantType</code></td><td>Attendee</td></tr>
+        <tr><td><code>EventMgmtParticipantRole</code></td><td>Attend</td></tr>
+        <tr><td><code>EventMgmtPtcpTypeRoleMap</code></td><td>Attendee → Attend on the Speaker Meeting type</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" id="s4">
+    <h2>4. HCP accounts and location</h2>
+    <p>Names match the Figma so the product owner is not lost. Four rows are enough; “42 invited” is a count, not 42 records.</p>
+    <table>
+      <thead><tr><th>HCP</th><th>HCO</th></tr></thead>
+      <tbody>
+        <tr><td>Dr. Maya Chen</td><td>Massachusetts General Hospital</td></tr>
+        <tr><td>Dr. James Okonkwo</td><td>Dana-Farber Cancer Institute</td></tr>
+        <tr><td>Dr. Priya Shah</td><td>Memorial Sloan Kettering</td></tr>
+        <tr><td>Dr. Elena Rossi</td><td>Cleveland Clinic</td></tr>
+      </tbody>
+    </table>
+    <p>Location Boston, MA. Event <code>Mode</code> = <code>InPerson</code>.</p>
+  </div>
+
+  <div class="card" id="s5">
+    <h2>5. Sample managed events</h2>
+    <p>OOTB <code>MngEvent.Status</code> is <strong>New / Pending / Completed</strong> — not Planned / In Progress.</p>
+    <table>
+      <thead><tr><th>Event</th><th>Status</th><th>Start</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Oncology KOL Advisory Board</strong></td><td><code>Pending</code></td><td>30 Aug 2026 08:00 America/New_York</td></tr>
+        <tr><td>Cardiology Dinner Symposium</td><td><code>New</code></td><td>12 Sep 2026</td></tr>
+        <tr><td>Regional Payer Access Forum</td><td><code>Completed</code></td><td>04 Aug 2026</td></tr>
+      </tbody>
+    </table>
+    <p>On the Advisory Board set type Speaker Meeting, Mode InPerson, EstimatedParticipantCount 42, check-in 07:30–12:00, owner Priya Nair.</p>
+    <p>Four participants: Attendee / Attend, Response Accepted, invitation sent, <strong>AttendanceStatus blank</strong>. Do not pre-mark Maya as Attended.</p>
+  </div>
+
+  <div class="card" id="s6">
+    <h2>6. Lightning page <span class="lsc-badge ootb">OOTB</span> <span class="lsc-badge config">Config</span></h2>
+    <ol class="setup">
+      <li><strong>Path</strong> on Status: New → Pending → Completed.</li>
+      <li><strong>Highlights:</strong> Status, Start, Mode / location, estimated participants.</li>
+      <li><strong>Dynamic Actions:</strong> pin Record Attendance if Action Launcher has it; else participant Edit.</li>
+      <li>Related list columns: Name, Participant, Attendance Status, Participant Response, Participant Type.</li>
+      <li>List view My In-Progress Events: owner Priya and Status = Pending. Make it her default.</li>
+    </ol>
+  </div>
+
+  <div class="card" id="s7">
+    <h2>7. Attendance UI</h2>
+    <table>
+      <thead><tr><th>Path</th><th>Click</th><th>When</th></tr></thead>
+      <tbody>
+        <tr><td>Figma</td><td>Prototype Present</td><td>LWC not deployed</td></tr>
+        <tr><td>OOTB related list</td><td>Participant → Attended / NoShow</td><td>Org live, roster not built</td></tr>
+        <tr><td>Target build</td><td>Action Launcher → <code>lscEventAttendanceRoster</code></td><td>LWC + IPs deployed <span class="lsc-badge lwc">LWC proposed</span></td></tr>
+      </tbody>
+    </table>
+    <p>Until the LWC ships, the related list is the honest org demo — same objects, no OmniScript.</p>
+  </div>
+
+  <div class="card" id="s8">
+    <h2>8. Verify as Priya Nair</h2>
+    <ul class="check">
+      <li>List shows Oncology KOL Advisory Board as Pending.</li>
+      <li>Path on Pending; four participants; attendance blank.</li>
+      <li>Maya → Attended and James → NoShow succeed.</li>
+      <li>Priya owns the event or has sharing access.</li>
+    </ul>
+    <h3>Picklist map</h3>
+    <table>
+      <thead><tr><th>Figma</th><th>OOTB</th></tr></thead>
+      <tbody>
+        <tr><td>Planned</td><td>Status = New</td></tr>
+        <tr><td>In Progress</td><td>Status = Pending</td></tr>
+        <tr><td>Completed</td><td>Status = Completed</td></tr>
+        <tr><td>Not Recorded</td><td>AttendanceStatus blank</td></tr>
+        <tr><td>No-Show</td><td>NoShow</td></tr>
+      </tbody>
+    </table>
+    <h3>Reset between takes</h3>
+    <p>Clear Maya and James attendance. Leave the event Pending. Hard-refresh Lightning.</p>
+  </div>
+
+  <p class="muted">Sources: Life Sciences Cloud Developer Guide — Event Management, MngEvent, MngEventType, MngEventParticipant (API v67.0). Visit Management Help for Life Sciences Commercial Admin. Confirm field labels in Object Manager. Confirm Event Organizer permission set API name in this org.</p>
+</main>
+</body>
+</html>

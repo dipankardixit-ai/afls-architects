@@ -1,6 +1,6 @@
-# AFLS Architects · LSC Delivery Architect
+# LSC Architects · LSC Delivery Architect
 
-Partner deck and Cursor skill pack for the **Agentforce Life Sciences (AFLS) Architects Team**.
+Partner deck and Cursor skill pack for the **Agentforce Life Sciences (LSC) Architects Team**.
 
 This repository is the team showcase for the **LSC Delivery Architect** agent skill — a prototype-first Salesforce Delivery / Solution Architect for Life Sciences Cloud. It turns an LSC feature ask into:
 
@@ -38,10 +38,10 @@ Workflow modes (STEP 0): `Plan + Prototype` · `New Feature` · `Refactor` · `E
 Project-level (recommended):
 
 ```bash
-git clone https://github.com/dipankardixit-ai/afls-architects.git
+git clone https://github.com/dipankardixit-ai/lsc-architects.git
 mkdir -p /path/to/your-project/.cursor/skills /path/to/your-project/.cursor/rules
-cp -R afls-architects/skills/lsc-delivery-architect /path/to/your-project/.cursor/skills/
-cp    afls-architects/rules/use-lsc-delivery-architect.mdc /path/to/your-project/.cursor/rules/
+cp -R lsc-architects/skills/lsc-delivery-architect /path/to/your-project/.cursor/skills/
+cp    lsc-architects/rules/use-lsc-delivery-architect.mdc /path/to/your-project/.cursor/rules/
 ```
 
 Or run `./install.sh /path/to/your-project`.
@@ -100,6 +100,6 @@ Without either, the skill still runs and marks unverifiable names *(proposed)*.
 
 ## Team
 
-**AFLS Architects Team** — Agentforce Life Sciences delivery architecture.
+**LSC Architects Team** — Agentforce Life Sciences delivery architecture.
 
 This is a showcase and install pack. The skill does not implement Apex/LWC/OmniStudio metadata; it plans, prototypes, and authors the story a builder can start without a follow-up meeting.

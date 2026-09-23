@@ -1,8 +1,8 @@
 #!/bin/bash
-# Double-click or run this file to publish the AFLS Architects repo to GitHub.
+# Double-click or run this file to publish the LSC Architects repo to GitHub.
 cd "$(dirname "$0")" || exit 1
 
-echo "=== AFLS Architects → GitHub ==="
+echo "=== LSC Architects → GitHub ==="
 echo
 
 if ! gh auth status >/dev/null 2>&1; then
