@@ -457,6 +457,7 @@
       <span class="brand-copy"><span class="title">On this page</span></span>
     </span>
     <nav class="tabs">
+      <button data-tab="who">Who We Are</button>
       <button class="active" data-tab="story">Start Here</button>
       <button data-tab="mechanics">How It Works</button>
       <button data-tab="proof">See It Work</button>
@@ -490,6 +491,71 @@
 </header>
 
 <main class="wrap">
+
+  <!-- WHO WE ARE -->
+  <section id="who" class="panel">
+    <div class="xlabel">Who We Are</div>
+    <h2 class="xhead">The LSC Architects team — delivery architecture for Life Sciences Cloud.</h2>
+    <div class="divider-sm"></div>
+    <p class="xsub">We are the Life Sciences delivery architecture group inside Salesforce Professional Services. We shape how LSC engagements get planned, prototyped, and specified — and we publish that shape as tooling the whole competency installs, instead of guidance each architect re-derives on their own engagement.</p>
+
+    <div class="chain" style="margin-top:32px">
+      <div class="chain-card">
+        <div class="chain-num">01</div>
+        <h3>What We Do</h3>
+        <p>Shape LSC solutions before they are estimated — the build-technology decision, a grounded prototype the product owner can click, and user stories a developer can pick up without booking a follow-up meeting.</p>
+      </div>
+      <div class="chain-card">
+        <div class="chain-num">02</div>
+        <h3>How We Work</h3>
+        <p>Declarative-first, prototype-first, and explicit about what we could not verify. An object or component we cannot confirm ships marked <em>(proposed)</em> — never asserted and never quietly guessed.</p>
+      </div>
+      <div class="chain-card">
+        <div class="chain-num">03</div>
+        <h3>What We Own</h3>
+        <p>The shared LSC delivery standard: the persona contract, the standard-object catalog, the Veeva translation, and the build-technology decision guide — maintained in one place, versioned, and covered by evaluations.</p>
+      </div>
+    </div>
+
+    <div class="payoff">
+      <p>The standard is the deliverable. If it only lives in one architect's head, the next engagement starts from a blank page and the competency learns nothing.</p>
+    </div>
+
+    <div class="mini-header">What we bring to an engagement</div>
+    <div class="steps-grid">
+      <div class="step-mini">
+        <div class="step-badge">1</div>
+        <h4>Life Sciences Cloud depth</h4>
+        <p>The LSC object model and personas — Field Sales Representative, MSL, KAM, Event Organizer — rather than a generic Sales Cloud reading of a pharma requirement.</p>
+      </div>
+      <div class="step-mini">
+        <div class="step-badge">2</div>
+        <h4>Veeva translation</h4>
+        <p>Legacy requirements re-anchored to LSC-native terms and login roles, with anything that has no clean equivalent raised as a clarification.</p>
+      </div>
+      <div class="step-mini">
+        <div class="step-badge">3</div>
+        <h4>Honest cost shape</h4>
+        <p>Every control on a mockup carries the component that will implement it, so nobody approves a picture and discovers the custom build at estimate time.</p>
+      </div>
+      <div class="step-mini">
+        <div class="step-badge">4</div>
+        <h4>A published standard</h4>
+        <p>Install it once and every session applies the same contract — consistency that no longer depends on who staffed the engagement.</p>
+      </div>
+    </div>
+
+    <div class="testimonial">
+      <span class="tag">What we are accountable for</span>
+      <p>"If you've seen one architect's delivery process, you've seen one architect's delivery process." Our job is to make that sentence stop being true.</p>
+    </div>
+
+    <div class="tab-nav">
+      <span></span>
+      <button class="tab-nav-btn next" onclick="activate('story');window.scrollTo(0,0)">Start Here →</button>
+    </div>
+
+  </section>
 
   <!-- STORY -->
   <section id="story" class="panel active">
@@ -546,7 +612,7 @@
     </div>
 
     <div class="tab-nav">
-      <span></span>
+      <button class="tab-nav-btn prev" onclick="activate('who');window.scrollTo(0,0)">← Who We Are</button>
       <button class="tab-nav-btn next" onclick="activate('mechanics');window.scrollTo(0,0)">How It Works →</button>
     </div>
 
@@ -1022,6 +1088,7 @@ cd lsc-architects
       <div>
         <div class="footer-col-title">On this page</div>
         <div class="footer-links">
+          <button onclick="activate('who');window.scrollTo(0,0)">Who We Are</button>
           <button onclick="activate('story');window.scrollTo(0,0)">Start Here</button>
           <button onclick="activate('mechanics');window.scrollTo(0,0)">How It Works</button>
           <button onclick="activate('proof');window.scrollTo(0,0)">See It Work</button>
